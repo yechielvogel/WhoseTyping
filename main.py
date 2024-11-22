@@ -67,7 +67,7 @@ def open_whatsapp():
         # Open the country dropdown and select the country
         time.sleep(1)
         dropdown_parent = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "(//button[contains(@class, 'x889kno')])[2]"))
+            EC.presence_of_element_located((By.XPATH, "(//button[contains(@class, 'x889kno')])[1]"))
         )
         dropdown_parent.click()
         driver.execute_script("arguments[0].scrollIntoView(true);", dropdown_parent)
